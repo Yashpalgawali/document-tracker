@@ -1,5 +1,6 @@
 package com.example.demo.models;
 
+import javax.persistence.CascadeType;
 import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
@@ -8,6 +9,9 @@ import javax.persistence.JoinColumn;
 import javax.persistence.ManyToOne;
 import javax.persistence.SequenceGenerator;
 import javax.persistence.Table;
+import javax.persistence.Transient;
+
+import org.springframework.web.multipart.MultipartFile;
 
 import lombok.AllArgsConstructor;
 import lombok.Data;
@@ -18,7 +22,7 @@ import lombok.NoArgsConstructor;
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
-@SequenceGenerator(name = "regulation_seq")
+@SequenceGenerator(name = "regulation_seq",allocationSize = 1,initialValue = 1)
 public class Regulation {
 
 	@Id
@@ -37,7 +41,10 @@ public class Regulation {
 	
 	private String file_path;
 	
-	@ManyToOne
+	@Transient
+	private MultipartFile file;
+	
+	@ManyToOne(cascade = { CascadeType.MERGE })
 	@JoinColumn(name = "vendor_id",nullable = false)
 	private Vendor vendor;
 }

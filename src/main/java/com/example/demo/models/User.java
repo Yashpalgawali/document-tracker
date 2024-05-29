@@ -1,5 +1,6 @@
 package com.example.demo.models;
 
+import javax.annotation.Generated;
 import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
@@ -9,38 +10,36 @@ import javax.persistence.JoinColumn;
 import javax.persistence.OneToOne;
 import javax.persistence.SequenceGenerator;
 import javax.persistence.Table;
-import javax.persistence.Transient;
 
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
 @Entity
-@Table(name="tbl_vendor")
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
-@SequenceGenerator(name = "vendor_seq",allocationSize = 1,initialValue = 1)
-public class Vendor {
+@SequenceGenerator(name = "user_seq", allocationSize = 1, initialValue = 1)
+@Table(name="tbl_user")
+public class User {
 
 	@Id
-	@GeneratedValue(generator = "vendor_seq",strategy = GenerationType.AUTO)
-	private Integer vendor_id;
-	
-	private String vendor_name;
+	@GeneratedValue(generator = "user_seq",strategy = GenerationType.AUTO)
+	private Integer user_id;
 	
 	@Column(unique = true)
-	private String vendor_email;
-	
-	private String vendor_contact;
-	
-	@Transient
-	private String password;
-	
-	@Transient
 	private String username;
 	
+	@Column(unique = true)
+	private String email;
+	
+	private String password;
+	
+	private Integer enabled;
+	
+	private String role;
+	
 	@OneToOne
-	@JoinColumn(name="vendor_type_id")
-	private VendorType vendor_type;
+	@JoinColumn(name= "vendor_id")
+	private Vendor vendor; 
 }

@@ -38,4 +38,10 @@ public class RegulationServImpl implements RegulationService {
 			return null;
 	}
 
+	@Override
+	public List<Regulation> getRegulationByVendorId(Integer vendor_id) {
+
+		return regulationrepo.getAllRegulationsByVendorId(vendor_id);
+	}
+
 }

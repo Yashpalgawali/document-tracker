@@ -3,6 +3,7 @@ package com.example.demo.controller;
 import java.util.List;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.annotation.Bean;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -12,7 +13,9 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.example.demo.models.User;
 import com.example.demo.models.Vendor;
+import com.example.demo.service.UserService;
 import com.example.demo.service.VendorService;
 
 @RestController
@@ -22,12 +25,28 @@ public class VendorController {
 	@Autowired
 	VendorService vendserv;
 	
+	@Autowired
+	UserService userserv;
+	
+	
+	
 	@PostMapping("/")
 	public ResponseEntity<Vendor> saveVendor(@RequestBody Vendor vendor)
 	{
 		Vendor vend = vendserv.saveVendor(vendor);
 		if(vend!=null)
+		{
+			User user = new User();
+			user.setEmail(vend.getVendor_email());
+			user.setPassword(vendor.getPassword() );
+			user.setRole(vend.getVendor_type().getVendor_type());
+			user.setUsername(vendor.getUsername());
+			user.setVendor(vend);
+			
+			userserv.saveUser(user);
+			
 			return new ResponseEntity<Vendor>(vend, HttpStatus.OK);
+		}
 		else
 			return new ResponseEntity<Vendor>(HttpStatus.INTERNAL_SERVER_ERROR);
 	}

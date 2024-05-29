@@ -11,8 +11,10 @@ import com.example.demo.models.Regulation;
 @Repository("regulationrepo")
 public interface RegulationRepository extends JpaRepository<Regulation, Integer> {
 
-
 	@Query("SELECT r FROM Regulation r ")
 	public List<Regulation> getAllRegulations();
 	
+	
+	@Query("SELECT r FROM Regulation r JOIN r.vendor WHERE r.vendor.vendor_id=:vendor_id")
+	public List<Regulation> getAllRegulationsByVendorId(Integer vendor_id);
 }
