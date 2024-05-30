@@ -3,7 +3,6 @@ package com.example.demo.controller;
 import java.util.List;
 
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.context.annotation.Bean;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -27,24 +26,24 @@ public class VendorController {
 	
 	@Autowired
 	UserService userserv;
-	
-	
-	
+		
 	@PostMapping("/")
 	public ResponseEntity<Vendor> saveVendor(@RequestBody Vendor vendor)
 	{
 		Vendor vend = vendserv.saveVendor(vendor);
-		if(vend!=null)
-		{
+		if(vend!=null) {
 			User user = new User();
 			user.setEmail(vend.getVendor_email());
-			user.setPassword(vendor.getPassword() );
+			user.setPassword(vendor.getPassword());
 			user.setRole(vend.getVendor_type().getVendor_type());
 			user.setUsername(vendor.getUsername());
+			user.setEnabled(1);
 			user.setVendor(vend);
 			
-			userserv.saveUser(user);
-			
+			User savedUser = userserv.saveUser(user);
+			if(savedUser!=null) {
+				System.err.println("saved User  is "+savedUser.toString());
+			}
 			return new ResponseEntity<Vendor>(vend, HttpStatus.OK);
 		}
 		else
