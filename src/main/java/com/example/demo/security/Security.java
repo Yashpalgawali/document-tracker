@@ -24,10 +24,11 @@ public class Security extends WebSecurityConfigurerAdapter {
 		auth.jdbcAuthentication()
 		.dataSource(dataSource)
 		
-		.usersByUsernameQuery("select email,enabled,password,username,vendor_id from tbl_user where username=?")
+		.usersByUsernameQuery("select username,password,enabled from tbl_user where username=? ")
+//		.usersByUsernameQuery("select email,enabled,password,username,vendor_id from tbl_user where username=?")
 		.authoritiesByUsernameQuery(" select username,role from tbl_user where username=? ")
 		
-		//.passwordEncoder(new BCryptPasswordEncoder())
+		.passwordEncoder(new BCryptPasswordEncoder())
 		;
 	}
 	
