@@ -3,12 +3,15 @@ package com.example.demo.security;
 import javax.sql.DataSource;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.http.HttpMethod;
+import org.springframework.security.authentication.dao.DaoAuthenticationProvider;
 import org.springframework.security.config.annotation.authentication.builders.AuthenticationManagerBuilder;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.annotation.web.configuration.WebSecurityConfigurerAdapter;
+import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 
 @Configuration
@@ -32,6 +35,16 @@ public class Security extends WebSecurityConfigurerAdapter {
 		;
 	}
 	
+	@Bean
+	public DaoAuthenticationProvider authenticationprovider()
+	{
+		DaoAuthenticationProvider daoAuthenticationProvider = new DaoAuthenticationProvider();
+		daoAuthenticationProvider.setUserDetailsService(this.getUserDetailService());
+		daoAuthenticationProvider.setPasswordEncoder(passEncoder());
+		
+		return daoAuthenticationProvider;
+	}
+	
 	@Override
 	protected void configure(HttpSecurity http) throws Exception {
 		
@@ -39,10 +52,15 @@ public class Security extends WebSecurityConfigurerAdapter {
 		
 		http.authorizeRequests()
 		.antMatchers(HttpMethod.OPTIONS, "/**").permitAll()
-		.anyRequest().authenticated()
+//		.antMatchers("/**","/usertype/**","/vendortype/**").hasRole("Admin")
+//		.antMatchers("/vendor/**","/regulation/**").hasAnyRole("Quality","Social","Admin")
+//		.antMatchers("/").permitAll()
+		.anyRequest().permitAll()
 		.and()
+		
 		.formLogin()
-		.successForwardUrl("/")
+		.defaultSuccessUrl("/vendor/")
+		
 		.and()
 		.logout()
 		.invalidateHttpSession(true)
@@ -50,5 +68,17 @@ public class Security extends WebSecurityConfigurerAdapter {
 		.and()
 		.httpBasic();
 		
+	}
+	
+	@Bean
+	public BCryptPasswordEncoder passEncoder()
+	{ 
+		return new BCryptPasswordEncoder();
+	}
+	
+	
+	@Bean
+	public UserDetailsService getUserDetailService() {
+		return new UserDetailServiceImpl();
 	}
 }
