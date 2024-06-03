@@ -5,6 +5,8 @@ import java.util.List;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
+import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -18,6 +20,7 @@ import com.example.demo.service.UserService;
 import com.example.demo.service.VendorService;
 
 @RestController
+@CrossOrigin(origins = "*")
 @RequestMapping("vendor")
 public class VendorController {
 
@@ -34,7 +37,7 @@ public class VendorController {
 		if(vend!=null) {
 			User user = new User();
 			user.setEmail(vend.getVendor_email());
-			user.setPassword(vendor.getPassword());
+			user.setPassword(new BCryptPasswordEncoder().encode(vendor.getPassword()));
 			user.setRole(vend.getVendor_type().getVendor_type());
 			user.setUsername(vendor.getUsername());
 			user.setEnabled(1);
