@@ -16,12 +16,14 @@ import org.springframework.web.multipart.MultipartFile;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import lombok.ToString;
 
 @Entity
 @Table(name="tbl_regulation")
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
+@ToString
 @SequenceGenerator(name = "regulation_seq",allocationSize = 1,initialValue = 1)
 public class Regulation {
 
