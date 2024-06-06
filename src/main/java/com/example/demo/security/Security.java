@@ -58,10 +58,6 @@ public class Security extends WebSecurityConfigurerAdapter {
 		.anyRequest().permitAll()
 		.and()
 		
-		.formLogin()
-		.defaultSuccessUrl("/vendor/")
-		
-		.and()
 		.logout()
 		.invalidateHttpSession(true)
 		

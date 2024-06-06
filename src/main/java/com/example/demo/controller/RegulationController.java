@@ -2,11 +2,13 @@ package com.example.demo.controller;
 
 import java.io.File;
 import java.io.IOException;
+import java.io.InputStream;
 import java.net.URI;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.List;
+import java.util.function.Predicate;
 
 import javax.servlet.ServletContext;
 import javax.servlet.http.HttpSession;
@@ -29,7 +31,9 @@ import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 import org.springframework.web.util.UriComponentsBuilder;
 
 import com.example.demo.models.Regulation;
+import com.example.demo.models.Vendor;
 import com.example.demo.service.RegulationService;
+import com.example.demo.service.VendorService;
 
 @RestController
 @RequestMapping("regulation")
@@ -45,6 +49,9 @@ public class RegulationController {
 	@Value("${upload.dir}")
     private String uploadPath;
 
+	@Autowired
+	VendorService vendserv;
+	
 	@PostMapping("/")
 	 public ResponseEntity<Regulation> saveRegulation(
 	            @RequestPart("regulation_name") String regulation_name,
@@ -53,15 +60,10 @@ public class RegulationController {
 	            @RequestPart("regulation_issued_date") String regulation_issued_date,
 	            @RequestPart(value = "file", required = false) MultipartFile file) {
 		
-	        Regulation reg = new Regulation();
-	        reg.setRegulation_name(regulation_name);
-	        reg.setRegulation_description(regulation_description);
-	        reg.setRegulation_frequency(regulation_frequency);
-	        reg.setRegulation_issued_date(regulation_issued_date);
-	        reg.setFile(file);
-	        
-	        System.err.println("inside saveregulation() \n "+reg.toString());
-	        
+	       String filename = file.getOriginalFilename();
+	       String filepath = "";  
+	       Regulation reg = new Regulation();
+	       Regulation regulation = null;
 	        if (file != null) {
 	        	File uploadDirectory = new File(uploadPath);
 	        	if(!uploadDirectory.exists())
@@ -103,74 +105,75 @@ public class RegulationController {
         				 System.out.println("Inside else block the Vendor directory alredy exists \n");
         				 Path path = Paths.get(vendorDir.getAbsolutePath());
         				 System.err.println(" Absolute Path of vendor Directory is "+path);
-        				 
-        				 String filename = file.getOriginalFilename();
+        				 						 
         				 try {
+        					
+        					 File f = new File(vendorDir.getAbsolutePath()+File.separator +filename); 
+        					  if(f.exists() ) {
+        						  String extension =  filename.substring(filename.lastIndexOf("."), filename.length()) ;
+        						
+        	        			  filename =  filename.substring(0, filename.lastIndexOf("."))+"-1"+extension  ; 
+        						  //f = new File(vendorDir.getAbsolutePath()+filename);
+        					  }
+        					  else {
+        						  System.out.println("THIS IS A NEW FILE \n");
+        					  }
+        					 
         					 Path filePath = Paths.get(vendorDir.getAbsolutePath(), filename);
+        					 filepath= vendorDir.getAbsolutePath()+File.separator+filename;
+        				        reg.setRegulation_name(regulation_name);
+        				        reg.setRegulation_description(regulation_description);
+        				        reg.setRegulation_frequency(regulation_frequency);
+        				        reg.setRegulation_issued_date(regulation_issued_date);
+        				        reg.setFile_name(filename);
+        				        reg.setFile_path(filepath);
+        				        
+        				        Vendor vendor = vendserv.getVendorById(1);
+        				        reg.setVendor(vendor);
+        				        regulation = regulationserv.saveRegulation(reg);
         					// Save the file to the specified directory
         					   Files.copy(file.getInputStream(), filePath);
-
+        					   // Delete the temporary file
+        			            deleteTempFile(file.getInputStream());
 							
 						} catch (IOException e) {
 							
 							e.printStackTrace();
 						}
+        				 
         			 }
 	        		
 	        	}
 	        }
-			Regulation regulation = regulationserv.saveRegulation(reg);
-			if(reg!=null)
+	      
+	        
+			if(regulation!=null)
 				return new ResponseEntity<Regulation>( regulation ,HttpStatus.OK);
 			else
 				return new ResponseEntity<Regulation>( HttpStatus.INTERNAL_SERVER_ERROR);	 
 	    }
+
+
+
+	private void deleteTempFile(InputStream ipstream){
+			try {
+				ipstream.close();
+			} catch (IOException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
+		}
 	
-	
-//	@PostMapping("/")
-//	public ResponseEntity<Regulation> saveRegulation(@RequestBody Regulation regulation, HttpSession sess)
-//	{
-////		URI uri = ServletUriComponentsBuilder.fromCurrentRequestUri()
-////                .replacePath(contextPath)
-////                .build()
-////                .toUri();
-////		
-////		sess.setAttribute("uri", uri);
-//		String file_name =  regulation.getFile().getOriginalFilename();
-//		System.err.println("File name is "+file_name+"\n data is "+regulation.toString());
-//		
-//		 File uploadDirectory = new File(uploadPath);
-//	        if (!uploadDirectory.exists()) {
-//	            boolean created = uploadDirectory.mkdirs();
-//	            if (created) {
-//	            	File vendorDir = new File(uploadPath+File.separator+"Quality");
-//	            	if(!vendorDir.exists())
-//	            	{
-//	            		boolean cr = vendorDir.mkdirs();
-//	            		if(cr) {
-//	            			System.out.println("\n New dir created at "+vendorDir.getAbsolutePath());
-//	            		}
-//	            		else {
-//	            			System.out.println("\n New dir ALREADY EXISTS at "+vendorDir.getAbsolutePath());
-//	            		}
-//	            	}
-//	            	System.out.println("Uploads directory created successfully at " + uploadDirectory.getAbsolutePath());
-//	            } else {
-//	                System.err.println("Failed to create uploads directory at " + uploadDirectory.getAbsolutePath());
-//	            }
-//	        } else {
-//	            System.out.println("Uploads directory already exists at " + uploadDirectory.getAbsolutePath());
-//	        }
-//		Regulation reg = regulationserv.saveRegulation(regulation);
-//		if(reg!=null)
-//			return new ResponseEntity<Regulation>( reg ,HttpStatus.OK);
-//		else
-//			return new ResponseEntity<Regulation>( HttpStatus.INTERNAL_SERVER_ERROR);
-//	}
+
 	
 	@GetMapping("/")
-	public ResponseEntity<List<Regulation>> getAllRegulations(HttpSession sess)
+	public ResponseEntity<List<Regulation>> getAllRegulations(HttpSession sess) throws Exception
 	{
+		//Files.list(Paths.get("uploads")).forEach((System.out::println));
+		
+//		Predicate<? super Path> predicate = path -> String.valueOf(path).contains(".java");
+//		Files.walk(Paths.get("."), 10).filter(predicate ).forEach(System.out::println);
+		
 		List<Regulation> rlist = regulationserv.getAllRegulations();
 		if(rlist.size()>0)
 			return new ResponseEntity<List<Regulation>>(rlist, HttpStatus.OK);
